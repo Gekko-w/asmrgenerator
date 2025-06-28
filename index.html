@@ -274,15 +274,16 @@
 
         // Variabel global untuk Firebase (DIPERLUKAN UNTUK PLATFORM CANVAS)
         // Saat dipindahkan ke Blogspot/Netlify, Anda perlu MENGGANTI ini dengan konfigurasi Firebase Anda sendiri.
-        // Contoh untuk Blogspot/Netlify:
-        const MY_APP_ID = "ganti-dengan-app-id-proyek-firebase-anda"; // Dari Firebase Console
-        const MY_FIREBASE_CONFIG = { // Dari Firebase Console
-            apiKey: "ganti-dengan-api-key-anda",
-            authDomain: "ganti-dengan-auth-domain-anda",
-            projectId: "ganti-dengan-project-id-anda",
-            storageBucket: "ganti-dengan-storage-bucket-anda",
-            messagingSenderId: "ganti-dengan-messaging-sender-id-anda",
-            appId: "ganti-dengan-app-id-anda-dari-web-app"
+        // Konfigurasi Firebase dari proyek Anda: asmr-4d201
+        const MY_APP_ID = "1:747080336344:web:1317c491b810f19be368ad";
+        const MY_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyDiAK4TYn3iLZy-5dIDrfRVdYrL0nGpSFM",
+            authDomain: "asmr-4d201.firebaseapp.com",
+            projectId: "asmr-4d201",
+            storageBucket: "asmr-4d201.firebasestorage.app",
+            messagingSenderId: "747080336344",
+            appId: "1:747080336344:web:1317c491b810f19be368ad"
+            // measurementId: "G-P9G4M1K2V6" // measurementId tidak digunakan di sini, bisa diabaikan
         };
 
         // Gunakan variabel global Canvas jika ada (untuk lingkungan Canvas),
@@ -486,7 +487,7 @@
 - Tujuan/Penggunaan: "${purposeUse || 'tidak ada spesifikasi tujuan/penggunaan'}"
 
 Anda dapat menambahkan kata-kata pembuka, frasa penutup, atau detail deskriptif tambahan yang sesuai untuk menciptakan 5 variasi yang berbeda.
-Berikan setiap judul di baris baru, tanpa angka, tanpa bullet point, tanpa teks pengantar, penutup, atau penjelasan lainnya. Contoh: 'Judul Contoh'`;
+Berikan setiap judul di baris baru, **HANYA teks judul**, tanpa angka, bullet point, atau teks pengantar/penutup lainnya. Contoh: 'Judul Contoh'`;
 
 
             let generatedIDText = "";
@@ -496,7 +497,8 @@ Berikan setiap judul di baris baru, tanpa angka, tanpa bullet point, tanpa teks 
                 chatHistoryID.push({ role: "user", parts: [{ text: promptID }] });
 
                 const payloadID = { contents: chatHistoryID };
-                const geminiApiKey = ""; // Kunci API untuk Gemini API
+                // Kunci API untuk Gemini API. Ini adalah kunci Anda yang sebenarnya.
+                const geminiApiKey = "AIzaSyAdFrvabr9DcZ95pgjYGoVyvga8SYzLLLU"; 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
 
                 const responseID = await fetch(apiUrl, {
@@ -505,6 +507,13 @@ Berikan setiap judul di baris baru, tanpa angka, tanpa bullet point, tanpa teks 
                     body: JSON.stringify(payloadID)
                 });
 
+                // Periksa apakah respons HTTP berhasil sebelum mencoba mengurai JSON
+                if (!responseID.ok) {
+                    const errorBody = await responseID.json();
+                    console.error("Gemini API (ID) HTTP Error:", responseID.status, errorBody);
+                    throw new Error(`Gemini API (ID) error: ${errorBody.error?.message || responseID.statusText}. Pastikan Kunci API Gemini Anda valid.`);
+                }
+
                 const resultID = await responseID.json();
 
                 if (resultID.candidates && resultID.candidates.length > 0 &&
@@ -512,18 +521,21 @@ Berikan setiap judul di baris baru, tanpa angka, tanpa bullet point, tanpa teks 
                     resultID.candidates[0].content.parts.length > 0) {
                     generatedIDText = resultID.candidates[0].content.parts[0].text.trim();
                 } else {
-                    throw new Error("Struktur respons Gemini untuk Bahasa Indonesia tidak terduga.");
+                    // Log respons lengkap untuk debugging jika struktur tidak sesuai
+                    console.error("Struktur respons Gemini (ID) tidak terduga:", resultID);
+                    throw new Error("Struktur respons Gemini (ID) tidak terduga. Cek konsol untuk detail.");
                 }
             } catch (error) {
                 console.error("Kesalahan saat menghasilkan judul Bahasa Indonesia:", error);
-                resultBox.innerText = "Kesalahan: Gagal menghasilkan judul Bahasa Indonesia. Silakan coba lagi.";
+                // Menampilkan pesan kesalahan yang lebih informatif kepada pengguna
+                resultBox.innerText = `Kesalahan: Gagal menghasilkan judul Bahasa Indonesia. ${error.message || 'Silakan coba lagi.'}`;
                 loadingSpinner.style.display = 'none';
                 return;
             }
 
-            // Pisahkan teks yang dihasilkan menjadi array judul, dan bersihkan setiap baris dari bullet/angka/spasi
+            // Pisahkan teks yang dihasilkan menjadi array judul, dan bersihkan setiap baris
             const titlesID = generatedIDText.split('\n')
-                                .map(line => line.trim().replace(/^[-\d\s.]+\s*/, '')) // Hapus bullet, angka, spasi di awal
+                                .map(line => line.trim())
                                 .filter(line => line.length > 0); // Hanya filter baris kosong
 
 
@@ -537,7 +549,7 @@ Berikan setiap judul di baris baru, tanpa angka, tanpa bullet point, tanpa teks 
             let titlesEN = [];
             // Bangun prompt untuk terjemahan Bahasa Inggris dari SEMUA judul ID
             let promptEN = `Translate each of the following ASMR titles into English.
-Provide each translation on a new line, without numbers, without bullet points, without introductory text, concluding remarks, or any other explanations. Example: 'Translated Title'.
+Provide each translation on a new line, **HANYA teks terjemahan**, tanpa angka, bullet point, atau teks pengantar/penutup lainnya. Contoh: 'Translated Title'.
 List of Indonesian Titles to Translate:
 ${titlesID.join('\n')}`; 
             
@@ -547,7 +559,8 @@ ${titlesID.join('\n')}`;
                 chatHistoryEN.push({ role: "user", parts: [{ text: promptEN }] });
 
                 const payloadEN = { contents: chatHistoryEN };
-                const geminiApiKey = ""; // Kunci API untuk Gemini API
+                // Kunci API untuk Gemini API. Ini adalah kunci Anda yang sebenarnya.
+                const geminiApiKey = "AIzaSyAdFrvabr9DcZ95pgjYGoVyvga8SYzLLLU"; 
                 const apiUrlEN = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
 
                 const responseEN = await fetch(apiUrlEN, {
@@ -555,6 +568,13 @@ ${titlesID.join('\n')}`;
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payloadEN)
                 });
+
+                // Periksa apakah respons HTTP berhasil sebelum mencoba mengurai JSON
+                if (!responseEN.ok) {
+                    const errorBody = await responseEN.json();
+                    console.error("Gemini API (EN) HTTP Error:", responseEN.status, errorBody);
+                    throw new Error(`Gemini API (EN) error: ${errorBody.error?.message || responseEN.statusText}. Pastikan Kunci API Gemini Anda valid.`);
+                }
 
                 const resultEN = await responseEN.json();
 
@@ -564,34 +584,34 @@ ${titlesID.join('\n')}`;
                     // Bersihkan output EN secara agresif
                     titlesEN = resultEN.candidates[0].content.parts[0].text.trim()
                                 .split('\n')
-                                .map(line => line.trim().replace(/^[-\d\s.]+\s*/, '')) // Hapus bullet, angka, spasi di awal
+                                .map(line => line.trim().replace(/^[-\d\s.]+\s*/, '')) 
                                 .filter(line => line.length > 0); 
                 } else {
-                    throw new Error("Struktur respons Gemini untuk Bahasa Inggris tidak terduga.");
+                    // Log respons lengkap untuk debugging jika struktur tidak sesuai
+                    console.error("Struktur respons Gemini (EN) tidak terduga:", resultEN);
+                    throw new Error("Struktur respons Gemini (EN) tidak terduga. Cek konsol untuk detail.");
                 }
             } catch (error) {
                 console.error("Kesalahan saat menghasilkan judul Bahasa Inggris:", error);
-                showMessage('Gagal menghasilkan terjemahan Bahasa Inggris. Menampilkan judul Bahasa Indonesia saja.');
-                // Isi dengan pesan fallback jika terjemahan gagal atau jumlahnya tidak cocok
+                showMessage(`Gagal menghasilkan terjemahan Bahasa Inggris. ${error.message || 'Menampilkan judul Bahasa Indonesia saja.'}`);
                 titlesEN = new Array(titlesID.length).fill("Terjemahan tidak tersedia."); 
             } finally {
                 loadingSpinner.style.display = 'none';
             }
 
             // Pastikan jumlah judul ID dan EN cocok untuk ditampilkan dalam tabel
-            // Jika tidak cocok, isi dengan fallback untuk menjaga konsistensi tabel
             while(titlesEN.length < titlesID.length) {
                 titlesEN.push("Terjemahan tidak tersedia.");
             }
             while(titlesID.length < titlesEN.length) {
-                titlesID.push("Judul ID tidak tersedia."); // Seharusnya tidak terjadi jika ID adalah sumber
+                titlesID.push("Judul ID tidak tersedia."); 
             }
 
 
             // Buat tabel untuk menampilkan judul (ID dan EN) untuk semua variasi
             let tableHtml = '<table class="result-table">';
             titlesID.forEach((titleID, index) => {
-                const titleEN = titlesEN[index] || "Terjemahan tidak tersedia."; // Pastikan ada fallback
+                const titleEN = titlesEN[index] || "Terjemahan tidak tersedia."; 
                 tableHtml += `
                     <tr>
                         <td>
@@ -611,8 +631,6 @@ ${titlesID.join('\n')}`;
             // Tambahkan event listener setelah HTML dimasukkan ke DOM
             const copyButtons = resultBox.querySelectorAll('.copy-btn');
             copyButtons.forEach(button => {
-                // Hapus event listener lama jika ada (penting saat memperbarui hasil)
-                // button.removeEventListener('click', existingHandler); // Tidak perlu jika resultBox.innerHTML selalu mengganti semuanya
                 button.addEventListener('click', (event) => {
                     const btn = event.target;
                     const isIdButton = btn.textContent === 'Salin ID';
@@ -623,7 +641,6 @@ ${titlesID.join('\n')}`;
 
 
             // Simpan data ke Firestore setelah berhasil dihasilkan
-            // Simpan semua judul yang dihasilkan (baik ID maupun EN)
             await saveGeneratedTitle(rainType, thunderType, visualLocation, purposeUse, titlesID.join('\n'), titlesEN.join('\n'));
         };
 
