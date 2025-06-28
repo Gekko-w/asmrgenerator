@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Judul ASMR Hujan</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts akan dimuat secara dinamis menggunakan JavaScript -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Pastikan font default tetap ada jika dynamic load lambat */
+            background-color: #e0f2f7; /* Warna latar belakang lembut */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            max-width: 800px; /* Menambah lebar maksimum untuk menampung riwayat */
+            width: 100%;
+            text-align: center;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: linear-gradient(to right, #2563eb, #3b82f6); /* Gradien biru */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px; /* Lebih bulat */
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease; /* Transisi untuk semua properti */
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Bayangan tombol */
+            border: none; /* Hapus border default */
+        }
+        button:hover {
+            background: linear-gradient(to right, #1d4ed8, #2563eb); /* Gradien lebih gelap saat hover */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Bayangan lebih besar saat hover */
+            transform: translateY(-2px); /* Sedikit naik saat hover */
+        }
+        button:active {
+            transform: translateY(0); /* Kembali ke posisi awal saat diklik */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bayangan lebih kecil saat aktif */
+        }
+        .result-box {
+            background-color: #e2e8f0; /* Warna abu-abu terang untuk kotak hasil */
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 24px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column; /* Mengubah arah flex menjadi kolom untuk menampung tabel */
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            color: #334155;
+            text-align: center;
+            word-break: break-word; /* Memastikan teks panjang pecah baris */
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #2563eb;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            /* display: none; will be set by JS */
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 16px;
+            justify-content: center; /* Posisikan tag di tengah */
+        }
+        .tag {
+            background-color: #cbd5e1; /* Latar belakang abu-abu untuk tag */
+            color: #4a5568; /* Teks lebih gelap untuk tag */
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            font-size: 14px;
+            white-space: nowrap; /* Mencegah tag pecah baris */
+        }
+        .tag:hover {
+            background-color: #a0aec0; /* Abu-abu lebih gelap saat hover */
+            transform: translateY(-1px);
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .result-table th, .result-table td {
+            padding: 10px;
+            border-bottom: 1px solid #cbd5e1;
+            text-align: left;
+            vertical-align: top; /* Agar teks multiline rapi */
+        }
+        .result-table th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+        }
+        .result-table td:last-child {
+            text-align: right;
+            width: 80px; /* Lebar tetap untuk tombol salin */
+        }
+        .copy-btn {
+            background-color: #4CAF50; /* Warna hijau untuk tombol salin */
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+        }
+        .copy-btn:hover {
+            background-color: #45a049; /* Hijau lebih gelap saat hover */
+        }
+        .message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            z-index: 1000;
+        }
+        .message-box.show {
+            opacity: 1;
+        }
+        /* Tab styling */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            color: #64748b; /* Warna teks abu-abu default */
+            border: none;
+            background: none;
+            transition: color 0.3s ease;
+        }
+        .tab-button.active {
+            color: #2563eb; /* Warna biru saat aktif */
+            border-bottom: 2px solid #2563eb; /* Garis bawah biru saat aktif */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Generator Judul ASMR Hujan</h1>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('generator')">Generator</button>
+            <button class="tab-button" onclick="showTab('history')">Riwayat</button>
+        </div>
+
+        <!-- Bagian Generator -->
+        <div id="generatorTab" class="tab-content">
+            <div class="mb-4 text-left">
+                <label for="rainType" class="block text-gray-700 text-sm font-bold mb-2">Jenis Hujan:</label>
+                <select id="rainType" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="Hujan Ringan">Hujan Ringan</option>
+                    <option value="Hujan Sedang">Hujan Sedang</option>
+                    <option value="Hujan Lebat">Hujan Lebat</option>
+                    <option value="Badai Petir">Badai Petir</option>
+                    <option value="Gerimis">Gerimis</option>
+                </select>
+            </div>
+
+            <div class="mb-4 text-left">
+                <label for="thunderType" class="block text-gray-700 text-sm font-bold mb-2">Jenis Petir:</label>
+                <select id="thunderType" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="Tanpa Petir">Tanpa Petir</option>
+                    <option value="Guntur Jauh">Guntur Jauh</option>
+                    <option value="Guntur Dekat">Guntur Dekat</option>
+                    <option value="Guntur Menggelegar">Guntur Menggelegar</option>
+                    <option value="Kilatan Petir">Kilatan Petir</option>
+                </select>
+            </div>
+
+            <div class="mb-4 text-left">
+                <label for="visualLocation" class="block text-gray-700 text-sm font-bold mb-2">Visual/Lokasi (opsional):</label>
+                <input type="text" id="visualLocation" placeholder="Contoh: di jendela, di hutan, di kota">
+                <div class="tag-container" id="visualLocationTags">
+                    <!-- Tag Visual/Lokasi akan diisi di sini -->
+                </div>
+            </div>
+
+            <div class="mb-6 text-left">
+                <label for="purposeUse" class="block text-gray-700 text-sm font-bold mb-2">Tujuan atau Penggunaan (opsional):</label>
+                <input type="text" id="purposeUse" placeholder="Contoh: untuk tidur, relaksasi, studi">
+                <div class="tag-container" id="purposeUseTags">
+                    <!-- Tag Tujuan/Penggunaan akan diisi di sini -->
+                </div>
+            </div>
+
+            <button onclick="generateTitle()">Hasilkan Judul</button>
+
+            <div class="result-box" id="resultBox">
+                Judul ASMR Anda akan muncul di sini.
+            </div>
+            <div class="loading-spinner" id="loadingSpinner"></div>
+        </div>
+
+        <!-- Bagian Riwayat -->
+        <div id="historyTab" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Riwayat Judul yang Dihasilkan</h2>
+            <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg mb-4" onclick="exportToCsv()">Ekspor ke Excel</button>
+            <div id="historyContent" class="overflow-x-auto">
+                <table id="historyTable" class="result-table">
+                    <thead>
+                        <tr>
+                            <!-- Kolom "Input" Dihilangkan -->
+                            <th>Judul (ID)</th>
+                            <th>Judul (EN)</th>
+                            <th>Salin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Riwayat akan dimuat di sini -->
+                    </tbody>
+                </table>
+                <p id="noHistoryMessage" class="text-gray-600 mt-4"></p>
+            </div>
+             <div class="loading-spinner mt-4" id="historyLoadingSpinner"></div>
+        </div>
+    </div>
+
+    <!-- Kotak pesan untuk notifikasi salin -->
+    <div id="messageBox" class="message-box"></div>
+
+    <script type="module">
+        // Impor Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variabel global untuk Firebase (DIPERLUKAN UNTUK PLATFORM CANVAS)
+        // Saat dipindahkan ke Blogspot/Netlify, Anda perlu MENGGANTI ini dengan konfigurasi Firebase Anda sendiri.
+        // Contoh untuk Blogspot/Netlify:
+        const MY_APP_ID = "ganti-dengan-app-id-proyek-firebase-anda"; // Dari Firebase Console
+        const MY_FIREBASE_CONFIG = { // Dari Firebase Console
+            apiKey: "ganti-dengan-api-key-anda",
+            authDomain: "ganti-dengan-auth-domain-anda",
+            projectId: "ganti-dengan-project-id-anda",
+            storageBucket: "ganti-dengan-storage-bucket-anda",
+            messagingSenderId: "ganti-dengan-messaging-sender-id-anda",
+            appId: "ganti-dengan-app-id-anda-dari-web-app"
+        };
+
+        // Gunakan variabel global Canvas jika ada (untuk lingkungan Canvas),
+        // jika tidak, gunakan konfigurasi yang ditentukan di atas (untuk Blogspot/Netlify).
+        const appId = typeof __app_id !== 'undefined' ? __app_id : MY_APP_ID;
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : MY_FIREBASE_CONFIG;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
+
+        let app;
+        let db;
+        let auth;
+        let userId;
+        let firebaseInitialized = false; // Flag untuk melacak inisialisasi Firebase
+        let globalHistoryData = []; // Variabel global untuk menyimpan data riwayat
+
+        // Contoh rekomendasi tag untuk Visual/Lokasi
+        const visualLocationRecommendations = [
+            "di jendela", "di hutan", "di kota", "kopi", "perpustakaan",
+            "kabin", "pantai", "gunung", "jalanan", "kafe", "mobil",
+            "Kamar Tidur Nyaman", "Jendela Hutan", "Pemandangan Gunung", "Ruangan Hangat",
+            "pemandangan kota", "di mobil", "api unggun", "gua", "jalanan basah"
+        ];
+
+        // Contoh rekomendasi tag untuk Tujuan/Penggunaan
+        const purposeUseRecommendations = [
+            "untuk tidur", "relaksasi", "studi", "fokus", "meditasi",
+            "mengurangi stres", "kecemasan", "menenangkan", "tidur siang", "santai", "suara latar"
+        ];
+
+        /**
+         * Menginisialisasi Firebase dan melakukan otentikasi.
+         */
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Mencoba masuk dengan token kustom jika tersedia (hanya untuk lingkungan Canvas)
+                if (initialAuthToken) {
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Berhasil masuk dengan token kustom.");
+                    } catch (customTokenError) {
+                        console.warn("Gagal masuk dengan token kustom, kembali ke mode anonim:", customTokenError);
+                        // Kembali ke mode masuk anonim jika token kustom gagal (misalnya, invalid-claims)
+                        await signInAnonymously(auth);
+                        console.log("Berhasil masuk secara anonim setelah kegagalan token kustom.");
+                    }
+                } else {
+                    // Jika tidak ada initialAuthToken (misalnya, di Blogspot/Netlify), masuk secara anonim
+                    await signInAnonymously(auth);
+                    console.log("Berhasil masuk secara anonim karena tidak ada token kustom yang disediakan.");
+                }
+
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                console.log("Firebase berhasil diinisialisasi. ID Pengguna:", userId);
+                firebaseInitialized = true; // Set flag menjadi true
+            } catch (error) {
+                console.error("Gagal menginisialisasi Firebase secara keseluruhan:", error);
+                document.getElementById('resultBox').innerText = "Kesalahan: Gagal menginisialisasi layanan. Silakan coba lagi.";
+            }
+        }
+
+        /**
+         * Mengisi wadah tag dengan tag yang dapat diklik.
+         * @param {string[]} recommendations - Array rekomendasi tag.
+         * @param {string} containerId - ID elemen HTML yang akan diisi.
+         * @param {string} targetInputId - ID bidang input tempat teks tag harus ditambahkan.
+         */
+        function populateTags(recommendations, containerId, targetInputId) {
+            const container = document.getElementById(containerId);
+            const targetInput = document.getElementById(targetInputId);
+            container.innerHTML = ''; // Hapus tag yang ada
+
+            recommendations.forEach(tagText => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.textContent = tagText;
+                tag.onclick = () => {
+                    let currentTags = targetInput.value.split(',').map(t => t.trim()).filter(t => t !== '');
+                    if (!currentTags.includes(tagText)) {
+                        currentTags.push(tagText);
+                    }
+                    targetInput.value = currentTags.join(', ');
+                };
+                container.appendChild(tag);
+            });
+        }
+
+        /**
+         * Menampilkan pesan singkat di bagian bawah layar.
+         * @param {string} message - Pesan yang akan ditampilkan.
+         */
+        function showMessage(message) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.classList.add('show');
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 2000); // Pesan akan hilang setelah 2 detik
+        }
+
+        /**
+         * Menyalin teks ke papan klip.
+         * @param {string} text - Teks yang akan disalin.
+         */
+        window.copyToClipboard = function(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showMessage('Disalin!');
+            } catch (err) {
+                console.error('Gagal menyalin teks:', err);
+                showMessage('Gagal menyalin.');
+            }
+            document.body.removeChild(textarea);
+        };
+
+        /**
+         * Mengubah tampilan tab.
+         * @param {string} tabName - Nama tab yang akan ditampilkan ('generator' atau 'history').
+         */
+        window.showTab = async function(tabName) {
+            const generatorTab = document.getElementById('generatorTab');
+            const historyTab = document.getElementById('historyTab');
+            const tabButtons = document.querySelectorAll('.tab-button');
+
+            // Sembunyikan semua konten tab dan nonaktifkan semua tombol tab
+            generatorTab.style.display = 'none';
+            historyTab.style.display = 'none';
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            // Tampilkan tab yang dipilih dan aktifkan tombolnya
+            if (tabName === 'generator') {
+                generatorTab.style.display = 'block';
+                document.querySelector('.tab-button:nth-child(1)').classList.add('active');
+            } else if (tabName === 'history') {
+                // Tampilkan historyTab terlebih dahulu sebelum memuat kontennya
+                historyTab.style.display = 'block'; 
+                document.querySelector('.tab-button:nth-child(2)').classList.add('active');
+                if (firebaseInitialized) {
+                    await loadHistory(); // Muat riwayat hanya jika Firebase sudah diinisialisasi
+                } else {
+                    const historyContentDiv = document.getElementById('historyContent');
+                    if (historyContentDiv) {
+                        document.getElementById('noHistoryMessage').style.display = 'none';
+                        document.getElementById('historyLoadingSpinner').style.display = 'none';
+                        historyContentDiv.innerHTML = '<p class="text-gray-600 mt-4">Firebase sedang diinisialisasi. Silakan coba lagi sebentar.</p>';
+                    } else {
+                        console.error("Elemen historyContent tidak ditemukan saat Firebase belum diinisialisasi.");
+                    }
+                }
+            }
+        };
+
+
+        // Panggil inisialisasi Firebase dan isi tag saat jendela dimuat
+        window.onload = function() {
+            initializeFirebase();
+            populateTags(visualLocationRecommendations, 'visualLocationTags', 'visualLocation');
+            populateTags(purposeUseRecommendations, 'purposeUseTags', 'purposeUse');
+            showTab('generator'); // Tampilkan tab generator secara default
+
+            // Sembunyikan elemen-elemen ini saat pertama kali dimuat menggunakan JS
+            document.getElementById('historyTab').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('noHistoryMessage').style.display = 'none';
+            document.getElementById('historyLoadingSpinner').style.display = 'none';
+
+            // Muat Google Fonts secara dinamis setelah DOM siap
+            const link = document.createElement('link');
+            link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap";
+            link.rel = "stylesheet";
+            document.head.appendChild(link);
+        };
+
+        /**
+         * Menghasilkan judul ASMR berdasarkan input pengguna.
+         */
+        window.generateTitle = async function() {
+            const rainType = document.getElementById('rainType').value;
+            const thunderType = document.getElementById('thunderType').value;
+            const visualLocation = document.getElementById('visualLocation').value.trim();
+            const purposeUse = document.getElementById('purposeUse').value.trim();
+            const resultBox = document.getElementById('resultBox');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            // Tampilkan spinner loading dan kosongkan kotak hasil
+            resultBox.innerHTML = ''; // Gunakan innerHTML karena kita akan memasukkan tabel
+            loadingSpinner.style.display = 'block';
+
+            // Bangun prompt untuk 5 variasi judul dengan memastikan input inti tetap ada
+            let promptID = `Buatkan 5 judul ASMR hujan. Untuk setiap judul, **pastikan untuk menggunakan semua input berikut**:
+- Jenis Hujan: "${rainType}"
+- Jenis Petir: "${thunderType && thunderType !== "Tanpa Petir" ? thunderType : "Tanpa Petir"}"
+- Visual/Lokasi: "${visualLocation || 'tidak ada spesifikasi visual/lokasi'}"
+- Tujuan/Penggunaan: "${purposeUse || 'tidak ada spesifikasi tujuan/penggunaan'}"
+
+Anda dapat menambahkan kata-kata pembuka, frasa penutup, atau detail deskriptif tambahan yang sesuai untuk menciptakan 5 variasi yang berbeda.
+Berikan setiap judul di baris baru, tanpa angka, tanpa bullet point, tanpa teks pengantar, penutup, atau penjelasan lainnya. Contoh: 'Judul Contoh'`;
+
+
+            let generatedIDText = "";
+            try {
+                // Panggil Gemini API untuk menghasilkan judul Bahasa Indonesia
+                let chatHistoryID = [];
+                chatHistoryID.push({ role: "user", parts: [{ text: promptID }] });
+
+                const payloadID = { contents: chatHistoryID };
+                const geminiApiKey = ""; // Kunci API untuk Gemini API
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+
+                const responseID = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadID)
+                });
+
+                const resultID = await responseID.json();
+
+                if (resultID.candidates && resultID.candidates.length > 0 &&
+                    resultID.candidates[0].content && resultID.candidates[0].content.parts &&
+                    resultID.candidates[0].content.parts.length > 0) {
+                    generatedIDText = resultID.candidates[0].content.parts[0].text.trim();
+                } else {
+                    throw new Error("Struktur respons Gemini untuk Bahasa Indonesia tidak terduga.");
+                }
+            } catch (error) {
+                console.error("Kesalahan saat menghasilkan judul Bahasa Indonesia:", error);
+                resultBox.innerText = "Kesalahan: Gagal menghasilkan judul Bahasa Indonesia. Silakan coba lagi.";
+                loadingSpinner.style.display = 'none';
+                return;
+            }
+
+            // Pisahkan teks yang dihasilkan menjadi array judul, dan bersihkan setiap baris dari bullet/angka/spasi
+            const titlesID = generatedIDText.split('\n')
+                                .map(line => line.trim().replace(/^[-\d\s.]+\s*/, '')) // Hapus bullet, angka, spasi di awal
+                                .filter(line => line.length > 0); // Hanya filter baris kosong
+
+
+            // Jika tidak ada judul Bahasa Indonesia yang dihasilkan, tampilkan pesan error
+            if (titlesID.length === 0) {
+                resultBox.innerText = "Tidak dapat menghasilkan judul Bahasa Indonesia yang valid. Silakan coba lagi.";
+                loadingSpinner.style.display = 'none';
+                return;
+            }
+
+            let titlesEN = [];
+            // Bangun prompt untuk terjemahan Bahasa Inggris dari SEMUA judul ID
+            let promptEN = `Translate each of the following ASMR titles into English.
+Provide each translation on a new line, without numbers, without bullet points, without introductory text, concluding remarks, or any other explanations. Example: 'Translated Title'.
+List of Indonesian Titles to Translate:
+${titlesID.join('\n')}`; 
+            
+            try {
+                // Panggil Gemini API untuk menghasilkan terjemahan Bahasa Inggris
+                let chatHistoryEN = [];
+                chatHistoryEN.push({ role: "user", parts: [{ text: promptEN }] });
+
+                const payloadEN = { contents: chatHistoryEN };
+                const geminiApiKey = ""; // Kunci API untuk Gemini API
+                const apiUrlEN = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+
+                const responseEN = await fetch(apiUrlEN, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadEN)
+                });
+
+                const resultEN = await responseEN.json();
+
+                if (resultEN.candidates && resultEN.candidates.length > 0 &&
+                    resultEN.candidates[0].content && resultEN.candidates[0].content.parts &&
+                    resultEN.candidates[0].content.parts.length > 0) {
+                    // Bersihkan output EN secara agresif
+                    titlesEN = resultEN.candidates[0].content.parts[0].text.trim()
+                                .split('\n')
+                                .map(line => line.trim().replace(/^[-\d\s.]+\s*/, '')) // Hapus bullet, angka, spasi di awal
+                                .filter(line => line.length > 0); 
+                } else {
+                    throw new Error("Struktur respons Gemini untuk Bahasa Inggris tidak terduga.");
+                }
+            } catch (error) {
+                console.error("Kesalahan saat menghasilkan judul Bahasa Inggris:", error);
+                showMessage('Gagal menghasilkan terjemahan Bahasa Inggris. Menampilkan judul Bahasa Indonesia saja.');
+                // Isi dengan pesan fallback jika terjemahan gagal atau jumlahnya tidak cocok
+                titlesEN = new Array(titlesID.length).fill("Terjemahan tidak tersedia."); 
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+
+            // Pastikan jumlah judul ID dan EN cocok untuk ditampilkan dalam tabel
+            // Jika tidak cocok, isi dengan fallback untuk menjaga konsistensi tabel
+            while(titlesEN.length < titlesID.length) {
+                titlesEN.push("Terjemahan tidak tersedia.");
+            }
+            while(titlesID.length < titlesEN.length) {
+                titlesID.push("Judul ID tidak tersedia."); // Seharusnya tidak terjadi jika ID adalah sumber
+            }
+
+
+            // Buat tabel untuk menampilkan judul (ID dan EN) untuk semua variasi
+            let tableHtml = '<table class="result-table">';
+            titlesID.forEach((titleID, index) => {
+                const titleEN = titlesEN[index] || "Terjemahan tidak tersedia."; // Pastikan ada fallback
+                tableHtml += `
+                    <tr>
+                        <td>
+                            <strong>ID:</strong> ${titleID}<br>
+                            <strong>EN:</strong> ${titleEN}
+                        </td>
+                        <td>
+                            <button class="copy-btn" data-title-id="${titleID}" data-title-en="${titleEN}">Salin ID</button>
+                            <button class="copy-btn mt-2" data-title-id="${titleID}" data-title-en="${titleEN}">Salin EN</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tableHtml += '</table>';
+            resultBox.innerHTML = tableHtml;
+
+            // Tambahkan event listener setelah HTML dimasukkan ke DOM
+            const copyButtons = resultBox.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                // Hapus event listener lama jika ada (penting saat memperbarui hasil)
+                // button.removeEventListener('click', existingHandler); // Tidak perlu jika resultBox.innerHTML selalu mengganti semuanya
+                button.addEventListener('click', (event) => {
+                    const btn = event.target;
+                    const isIdButton = btn.textContent === 'Salin ID';
+                    const textToCopy = isIdButton ? btn.dataset.titleId : btn.dataset.titleEn;
+                    copyToClipboard(textToCopy);
+                });
+            });
+
+
+            // Simpan data ke Firestore setelah berhasil dihasilkan
+            // Simpan semua judul yang dihasilkan (baik ID maupun EN)
+            await saveGeneratedTitle(rainType, thunderType, visualLocation, purposeUse, titlesID.join('\n'), titlesEN.join('\n'));
+        };
+
+        /**
+         * Menyimpan judul yang dihasilkan ke Firestore.
+         * @param {string} rainType - Jenis hujan yang dipilih.
+         * @param {string} thunderType - Jenis petir yang dipilih.
+         * @param {string} visualLocation - Visual/lokasi yang dimasukkan pengguna.
+         * @param {string} purposeUse - Tujuan/penggunaan yang dimasukkan pengguna.
+         * @param {string} generatedTitleID - Judul Bahasa Indonesia yang dihasilkan oleh model.
+         * @param {string} generatedTitleEN - Judul Bahasa Inggris yang dihasilkan oleh model.
+         */
+        async function saveGeneratedTitle(rainType, thunderType, visualLocation, purposeUse, generatedTitleID, generatedTitleEN) {
+            // Perhatian: Ketika dipindahkan ke Blogspot/Netlify, `__app_id` tidak ada.
+            // Gunakan MY_APP_ID yang Anda definisikan di atas.
+            // Path koleksi Firestore juga akan menjadi: `/artifacts/${MY_APP_ID}/users/${userId}/generatedTitles`
+            if (!firebaseInitialized || !db || !userId) {
+                console.error("Firebase belum diinisialisasi atau User ID tidak tersedia. Tidak dapat menyimpan data.");
+                return;
+            }
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/users/${userId}/generatedTitles`), {
+                    rainType: rainType,
+                    thunderType: thunderType,
+                    visualLocation: visualLocation,
+                    purposeUse: purposeUse,
+                    generatedTitleID: generatedTitleID,
+                    generatedTitleEN: generatedTitleEN,
+                    createdAt: serverTimestamp()
+                });
+                console.log("Judul (ID & EN) berhasil disimpan ke Firestore.");
+            } catch (error) {
+                console.error("Kesalahan saat menyimpan judul ke Firestore:", error);
+            }
+        }
+
+        /**
+         * Memuat dan menampilkan riwayat judul yang dihasilkan dari Firestore.
+         */
+        async function loadHistory() {
+            // Dapatkan referensi elemen DOM di dalam fungsi ini
+            const historyTable = document.getElementById('historyTable');
+            const noHistoryMessage = document.getElementById('noHistoryMessage');
+            const historyLoadingSpinner = document.getElementById('historyLoadingSpinner');
+
+            // Lakukan pemeriksaan null untuk memastikan elemen ditemukan
+            if (!historyTable || !noHistoryMessage || !historyLoadingSpinner) {
+                console.error("Kesalahan: Elemen utama DOM untuk riwayat tidak ditemukan (historyTable, noHistoryMessage, atau historyLoadingSpinner).");
+                const historyContentDiv = document.getElementById('historyContent');
+                if (historyContentDiv) {
+                    historyContentDiv.innerHTML = '<p class="text-red-500 mt-4">Terjadi kesalahan saat memuat riwayat. Elemen antarmuka tidak ditemukan.</p>';
+                }
+                return;
+            }
+
+            const historyTableBody = historyTable.querySelector('tbody'); // Dapatkan tbody dari tabel
+
+            if (!historyTableBody) {
+                console.error("Kesalahan: Elemen tbody tabel riwayat tidak ditemukan.");
+                const historyContentDiv = document.getElementById('historyContent');
+                if (historyContentDiv) {
+                    historyContentDiv.innerHTML = '<p class="text-red-500 mt-4">Terjadi kesalahan saat memuat riwayat. Elemen tbody tidak ditemukan.</p>';
+                }
+                return;
+            }
+
+            historyTableBody.innerHTML = ''; // Bersihkan riwayat yang ada
+            noHistoryMessage.style.display = 'none'; // Sembunyikan pesan "tidak ada riwayat"
+            historyLoadingSpinner.style.display = 'block'; // Tampilkan spinner loading
+
+            if (!firebaseInitialized || !db || !userId) {
+                historyTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-red-500">Kesalahan: Firebase belum diinisialisasi atau User ID tidak tersedia.</td></tr>'; // Mengurangi colspan
+                historyLoadingSpinner.style.display = 'none';
+                return;
+            }
+
+            try {
+                const q = query(collection(db, `artifacts/${appId}/users/${userId}/generatedTitles`));
+                const querySnapshot = await getDocs(q);
+                
+                globalHistoryData = []; // Reset dan isi ulang variabel global
+                querySnapshot.forEach((doc) => {
+                    globalHistoryData.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Urutkan data secara manual berdasarkan createdAt dalam urutan menurun
+                globalHistoryData.sort((a, b) => {
+                    if (a.createdAt && b.createdAt) {
+                        return b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime();
+                    }
+                    return 0;
+                });
+
+                if (globalHistoryData.length === 0) {
+                    noHistoryMessage.style.display = 'block';
+                } else {
+                    globalHistoryData.forEach(data => {
+                        // Pecah string judul menjadi array judul individu
+                        const titlesID = (data.generatedTitleID || '').split('\n').map(line => line.trim()).filter(line => line.length > 0);
+                        const titlesEN = (data.generatedTitleEN || '').split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+                        // Loop melalui setiap variasi judul yang disimpan
+                        for (let i = 0; i < Math.max(titlesID.length, titlesEN.length); i++) {
+                            const row = historyTableBody.insertRow();
+                            const currentTitleID = titlesID[i] || 'N/A';
+                            const currentTitleEN = titlesEN[i] || 'N/A';
+
+                            row.insertCell().textContent = currentTitleID;
+                            row.insertCell().textContent = currentTitleEN;
+                            
+                            const copyCell = row.insertCell();
+                            // Menggunakan data-attribute dan event delegation
+                            copyCell.innerHTML = `
+                                <button class="copy-btn" data-title-id="${currentTitleID}" data-title-en="${currentTitleEN}">Salin ID</button>
+                                <button class="copy-btn mt-2" data-title-id="${currentTitleID}" data-title-en="${currentTitleEN}">Salin EN</button>
+                            `;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Kesalahan saat memuat riwayat:", error);
+                historyTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-red-500">Gagal memuat riwayat.</td></tr>'; // Mengurangi colspan
+            } finally {
+                historyLoadingSpinner.style.display = 'none'; // Sembunyikan spinner loading
+            }
+        }
+
+        /**
+         * Mengekspor data riwayat ke file CSV.
+         */
+        window.exportToCsv = function() {
+            if (globalHistoryData.length === 0) {
+                showMessage("Tidak ada data riwayat untuk diekspor.");
+                return;
+            }
+
+            // Perubahan pada header CSV: menghapus kolom input
+            let csvContent = "Judul (ID),Judul (EN)\n"; // Header CSV baru
+
+            globalHistoryData.forEach(item => {
+                // Pecah string judul menjadi array judul individu dan bersihkan
+                const titlesID = (item.generatedTitleID || '').split('\n').map(line => line.trim()).filter(line => line.length > 0);
+                const titlesEN = (item.generatedTitleEN || '').split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+                for (let i = 0; i < Math.max(titlesID.length, titlesEN.length); i++) {
+                    const currentTitleID = `"${(titlesID[i] || '').replace(/"/g, '""')}"`;
+                    const currentTitleEN = `"${(titlesEN[i] || '').replace(/"/g, '""')}"`;
+                    // Sekarang hanya judul ID dan EN
+                    csvContent += `${currentTitleID},${currentTitleEN}\n`;
+                }
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'riwayat_judul_asmr_hujan.csv');
+            link.style.visibility = 'hidden'; // Sembunyikan link
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url); // Bersihkan URL objek
+            showMessage("Riwayat berhasil diekspor ke Excel (CSV)!");
+        };
+
+        // Delegasi peristiwa untuk tombol salin di tabel riwayat (historyTableBody)
+        // Dipasang sekali saja di awal
+        document.addEventListener('click', function(event) {
+            const target = event.target;
+            if (target.classList.contains('copy-btn')) {
+                const titleId = target.dataset.titleId;
+                const titleEn = target.dataset.titleEn;
+                const textToCopy = (target.textContent === 'Salin ID') ? titleId : titleEn;
+                copyToClipboard(textToCopy);
+            }
+        });
+
+    </script>
+</body>
+</html>
